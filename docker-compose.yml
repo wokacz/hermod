@@ -1,0 +1,87 @@
+version: "3.9"
+networks:
+  inet:
+    ipam:
+      config:
+        - subnet: 10.25.0.0/24
+          gateway: 10.25.0.1
+volumes:
+  pgdata: { }
+  pgadmin_data: { }
+  rabbitmq_data: { }
+  rabbitmq_log: { }
+services:
+  traefik:
+    image: traefik:v2.9
+    container_name: traefik
+    restart: unless-stopped
+    networks:
+      - inet
+    command:
+      - "--global.checknewversion=false"
+      - "--global.sendAnonymousUsage=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=inet"
+      - "--providers.file.directory=/etc/traefik/dynamic_conf"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--api=true"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./.config/ssl:/certs:ro
+      - ./.config/tls.yml:/etc/traefik/dynamic_conf/tls.yml:ro
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+      - "127.0.0.1:8080:8080/tcp"
+  database:
+    image: postgres:15.1-alpine
+    hostname: database
+    networks:
+      inet: { }
+    ports:
+      - "127.0.0.1:5432:5432/tcp"
+    volumes:
+      - pgdata:/var/lib/postgresql/data:rw
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+      - POSTGRES_HOST=database
+      - POSTGRES_PORT=5432
+      - POSTGRES_SSLMODE=disable
+  migrations:
+    image: "wokacz/hermod/migrations:lasted"
+    hostname: migrations
+    container_name: migrations
+    restart: "no"
+    networks:
+      - inet
+    depends_on:
+      - database
+    env_file:
+      - .env
+  authorization:
+    image: "wokacz/hermod/authorization:lasted"
+    hostname: authorization
+    container_name: authorization
+    restart: always
+    networks:
+      - inet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.tls=true"
+      - "traefik.http.routers.auth.entrypoints=websecure"
+      - "traefik.http.services.auth.loadBalancer.server.port=3000"
+      - "traefik.http.routers.auth.rule=PathPrefix(`/api/auth`)"
+      - "traefik.http.routers.auth.middlewares=auth-path@docker"
+      - "traefik.http.middlewares.auth-path.stripprefix.prefixes=/api/auth,/api/auth/"
+    depends_on:
+      - database
+    env_file:
+      - .env
