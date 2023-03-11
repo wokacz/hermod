@@ -1,0 +1,2 @@
+### GET Health check
+GET https://localhost/api/auth/__health

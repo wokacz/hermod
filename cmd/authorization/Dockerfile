@@ -6,6 +6,6 @@ WORKDIR $GOPATH/src/github.com/wokacz/hermod
 
 COPY . cmd/app/
 
-RUN go build -o /bin/app-release ./cmd/app/main.go
+RUN go build -o /bin/app-release cmd/app/main.go
 
 ENTRYPOINT ["/bin/app-release"]
