@@ -11,39 +11,44 @@ import (
 )
 
 var instance *Config
+var afterInitialization bool = false
 
 func Init() {
-	memory, err := strconv.ParseUint(env.Get("ARGON2_MEMORY", "65536"), 10, 64)
-	if err != nil {
-		return
-	}
+	if !afterInitialization {
+		memory, err := strconv.ParseUint(env.Get("ARGON2_MEMORY", "65536"), 10, 64)
+		if err != nil {
+			return
+		}
 
-	iterations, err := strconv.ParseInt(env.Get("ARGON2_ITERATIONS", "3"), 10, 0)
-	if err != nil {
-		return
-	}
+		iterations, err := strconv.ParseInt(env.Get("ARGON2_ITERATIONS", "3"), 10, 0)
+		if err != nil {
+			return
+		}
 
-	keyLength, err := strconv.ParseInt(env.Get("ARGON2_KEY_LENGTH", "2"), 10, 0)
-	if err != nil {
-		return
-	}
+		keyLength, err := strconv.ParseInt(env.Get("ARGON2_KEY_LENGTH", "2"), 10, 0)
+		if err != nil {
+			return
+		}
 
-	saltLength, err := strconv.ParseInt(env.Get("ARGON2_SALT_LENGTH", "16"), 10, 0)
-	if err != nil {
-		return
-	}
+		saltLength, err := strconv.ParseInt(env.Get("ARGON2_SALT_LENGTH", "16"), 10, 0)
+		if err != nil {
+			return
+		}
 
-	parallelism, err := strconv.ParseInt(env.Get("ARGON2_PARALLELISM", "32"), 10, 0)
-	if err != nil {
-		return
-	}
+		parallelism, err := strconv.ParseInt(env.Get("ARGON2_PARALLELISM", "32"), 10, 0)
+		if err != nil {
+			return
+		}
 
-	instance = &Config{
-		memory:      uint32(memory),
-		iterations:  uint32(iterations),
-		parallelism: uint8(parallelism),
-		saltLength:  uint32(saltLength),
-		keyLength:   uint32(keyLength),
+		instance = &Config{
+			memory:      uint32(memory),
+			iterations:  uint32(iterations),
+			parallelism: uint8(parallelism),
+			saltLength:  uint32(saltLength),
+			keyLength:   uint32(keyLength),
+		}
+
+		afterInitialization = true
 	}
 }
 

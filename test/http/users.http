@@ -1,0 +1,13 @@
+### GET Users health-check
+GET https://localhost/api/users/__health
+Accept: application/json
+
+### GET Users
+GET https://localhost/api/users
+Authorization: Bearer {{auth_token}}
+Accept: application/json
+
+### GET User
+GET https://localhost/api/users/f09c901f-87c6-4bca-bbb8-6d2da9455cc0
+Authorization: Bearer {{auth_token}}
+Accept: application/json

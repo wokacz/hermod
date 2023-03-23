@@ -6,10 +6,10 @@ networks:
         - subnet: 10.25.0.0/24
           gateway: 10.25.0.1
 volumes:
-  pgdata: { }
-  pgadmin_data: { }
-  rabbitmq_data: { }
-  rabbitmq_log: { }
+  pgdata: {}
+  pgadmin_data: {}
+  rabbitmq_data: {}
+  rabbitmq_log: {}
 services:
   traefik:
     image: traefik:v2.9
@@ -43,7 +43,7 @@ services:
     image: postgres:15.1-alpine
     hostname: database
     networks:
-      inet: { }
+      inet: {}
     ports:
       - "127.0.0.1:5432:5432/tcp"
     volumes:
@@ -55,17 +55,6 @@ services:
       - POSTGRES_HOST=database
       - POSTGRES_PORT=5432
       - POSTGRES_SSLMODE=disable
-  migrations:
-    image: wokacz/hermod-migrations:latest
-    hostname: migrations
-    container_name: migrations
-    restart: "no"
-    networks:
-      - inet
-    depends_on:
-      - database
-    env_file:
-      - .env
   auth:
     build:
       context: cmd/authorization
@@ -84,6 +73,94 @@ services:
       - "traefik.http.routers.auth.rule=PathPrefix(`/api/auth`)"
       - "traefik.http.routers.auth.middlewares=auth-path@docker"
       - "traefik.http.middlewares.auth-path.stripprefix.prefixes=/api/auth,/api/auth/"
+    depends_on:
+      - database
+    env_file:
+      - .env
+  roles:
+    build:
+      context: cmd/roles
+      dockerfile: Dockerfile
+    image: wokacz/hermod-roles:latest
+    hostname: roles
+    container_name: roles
+    restart: always
+    networks:
+      - inet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.roles.tls=true"
+      - "traefik.http.routers.roles.entrypoints=websecure"
+      - "traefik.http.services.roles.loadBalancer.server.port=3005"
+      - "traefik.http.routers.roles.rule=PathPrefix(`/api/roles`)"
+      - "traefik.http.routers.roles.middlewares=roles-path@docker"
+      - "traefik.http.middlewares.roles-path.stripprefix.prefixes=/api/roles,/api/roles/"
+    depends_on:
+      - database
+    env_file:
+      - .env
+  users:
+    build:
+      context: cmd/users
+      dockerfile: Dockerfile
+    image: wokacz/hermod-users:latest
+    hostname: users
+    container_name: users
+    restart: always
+    networks:
+      - inet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.users.tls=true"
+      - "traefik.http.routers.users.entrypoints=websecure"
+      - "traefik.http.services.users.loadBalancer.server.port=3010"
+      - "traefik.http.routers.users.rule=PathPrefix(`/api/users`)"
+      - "traefik.http.routers.users.middlewares=users-path@docker"
+      - "traefik.http.middlewares.users-path.stripprefix.prefixes=/api/users,/api/users/"
+    depends_on:
+      - database
+    env_file:
+      - .env
+  notifications:
+    build:
+      context: cmd/notifications
+      dockerfile: Dockerfile
+    image: wokacz/hermod-notifications:latest
+    hostname: notifications
+    container_name: notifications
+    restart: always
+    networks:
+      - inet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notifications.tls=true"
+      - "traefik.http.routers.notifications.entrypoints=websecure"
+      - "traefik.http.services.notifications.loadBalancer.server.port=3015"
+      - "traefik.http.routers.notifications.rule=PathPrefix(`/api/notifications`)"
+      - "traefik.http.routers.notifications.middlewares=notifications-path@docker"
+      - "traefik.http.middlewares.notifications-path.stripprefix.prefixes=/api/notifications,/api/notifications/"
+    depends_on:
+      - database
+    env_file:
+      - .env
+  boards:
+    build:
+      context: cmd/boards
+      dockerfile: Dockerfile
+    image: wokacz/hermod-boards:latest
+    hostname: boards
+    container_name: boards
+    restart: always
+    networks:
+      - inet
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.boards.tls=true"
+      - "traefik.http.routers.boards.entrypoints=websecure"
+      - "traefik.http.services.boards.loadBalancer.server.port=3020"
+      - "traefik.http.routers.boards.rule=PathPrefix(`/api/boards`)"
+      - "traefik.http.routers.boards.middlewares=boards-path@docker"
+      - "traefik.http.middlewares.boards-path.stripprefix.prefixes=/api/boards,/api/boards/"
     depends_on:
       - database
     env_file:

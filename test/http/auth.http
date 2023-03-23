@@ -1,2 +1,38 @@
 ### GET Health check
 GET https://localhost/api/auth/__health
+
+### POST Sign Up
+POST https://localhost/api/auth/sign-up
+Content-Type: application/json
+Accept: text/plain
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "userName": "johndoe",
+  "email": "john.doe@example.com",
+  "password": "secretpassword"
+}
+
+> {%
+    client.global.set("auth_token", response.body);
+%}
+
+### POST Sign In
+POST https://localhost/api/auth/sign-in
+Content-Type: application/json
+Accept: text/plain
+
+{
+  "userName": "johndoe",
+  "password": "secretpassword"
+}
+
+> {%
+    client.global.set("auth_token", response.body);
+%}
+
+### GET /me
+GET https://localhost/api/auth/me
+Authorization: Bearer {{auth_token}}
+Accept: application/json
