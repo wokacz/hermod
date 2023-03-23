@@ -6,8 +6,10 @@ import (
 	"github.com/wokacz/hermod/cmd/authorization/handler"
 	"github.com/wokacz/hermod/pkg/argon2"
 	"github.com/wokacz/hermod/pkg/database"
-	"github.com/wokacz/hermod/pkg/env"
-	"github.com/wokacz/hermod/pkg/jwt"
+
+	// "github.com/wokacz/hermod/pkg/env"
+	// "github.com/wokacz/hermod/pkg/jwt"
+	"github.com/wokacz/hermod/pkg/smtp"
 )
 
 // setupRoutes sets up the routes.
@@ -21,20 +23,24 @@ func setupRoutes(app *fiber.App) {
 	app.Post("/sign-up", handler.SignUp)
 
 	// JWT middleware.
-	secret := env.Get("JWT_SECRET", "top-secret")
-	app.Use(jwt.New(jwt.Config{
-		Secret: secret,
-	}))
+	// secret := env.Get("JWT_SECRET", "top-secret")
+	// app.Use(jwt.New(jwt.Config{
+	// 	Secret: secret,
+	// }))
 
 	app.Get("/me", handler.Me)
 }
 
 func init() {
+	// Initialize the database.
 	err := database.Init()
 	if err != nil {
 		panic(err.Error())
 	}
+	// Initialize the Argon2 hasher.
 	argon2.Init()
+	// Initialize the SMTP dialer.
+	smtp.Init()
 }
 
 func main() {

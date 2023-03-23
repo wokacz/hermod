@@ -5,8 +5,11 @@ import (
 	"github.com/wokacz/hermod/model"
 	"github.com/wokacz/hermod/pkg/argon2"
 	"github.com/wokacz/hermod/pkg/database"
+	"github.com/wokacz/hermod/pkg/env"
 	"github.com/wokacz/hermod/pkg/jwt"
+	"github.com/wokacz/hermod/pkg/smtp"
 	"github.com/wokacz/hermod/pkg/validation"
+	"gopkg.in/mail.v2"
 	"gorm.io/gorm"
 )
 
@@ -40,6 +43,17 @@ func SignUp(ctx *fiber.Ctx) error {
 		}
 		return err
 	})
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
+	}
+	// Create a new email message.
+	m := mail.NewMessage()
+	m.SetHeader("From", env.Get("EMAIL_FROM"))
+	m.SetHeader("To", user.Email)
+	m.SetHeader("Subject", "Welcome to Hermod!")
+	m.SetBody("text/html", "Hello, "+user.FirstName+"! Welcome to Hermod!")
+	// Send the email.
+	err = smtp.Dialer.DialAndSend(m)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).SendString(err.Error())
 	}
