@@ -2,7 +2,8 @@ package model
 
 import "github.com/google/uuid"
 
-// Notification is a model for a notification. A notification is a message that is sent to a user.
+// Notification is a model for a notification. A notification is a message that
+// is sent to a user.
 type Notification struct {
 	Model
 	// UserID is the ID of the user that the notification is sent to.

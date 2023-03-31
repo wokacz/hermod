@@ -5,8 +5,10 @@ import (
 	"gopkg.in/mail.v2"
 )
 
+// Dialer represents the SMTP dialer.
 var Dialer *mail.Dialer
 
+// Config represents the SMTP configuration.
 type Config struct {
 	UserName string
 	Password string

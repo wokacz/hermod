@@ -1,7 +1,7 @@
 ### GET Health check
 GET https://localhost/api/auth/__health
 
-### POST Sign Up
+### GET Sing Up
 POST https://localhost/api/auth/sign-up
 Content-Type: application/json
 Accept: text/plain

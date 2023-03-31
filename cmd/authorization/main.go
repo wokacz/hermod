@@ -18,16 +18,13 @@ func setupRoutes(app *fiber.App) {
 	app.Get("/__health", func(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(fiber.StatusOK)
 	})
-
 	app.Post("/sign-in", handler.SignIn)
 	app.Post("/sign-up", handler.SignUp)
-
 	// JWT middleware.
 	// secret := env.Get("JWT_SECRET", "top-secret")
 	// app.Use(jwt.New(jwt.Config{
 	// 	Secret: secret,
 	// }))
-
 	app.Get("/me", handler.Me)
 }
 
@@ -43,11 +40,16 @@ func init() {
 	smtp.Init()
 }
 
+// main is the entry point of the application.
 func main() {
 	var err error
+	// Create a new Fiber app.
 	app := fiber.New()
+	// Add the logger middleware.
 	app.Use(logger.New())
+	// Setup the routes.
 	setupRoutes(app)
+	// Start the server.
 	err = app.Listen(":3000")
 	if err != nil {
 		panic(err.Error())

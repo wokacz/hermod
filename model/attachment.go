@@ -1,6 +1,7 @@
 package model
 
-// Attachment is a model for an attachment. An attachment is a file that is attached to a task.
+// Attachment is a model for an attachment. An attachment is a file that is
+// attached to a task.
 type Attachment struct {
 	Model
 	// Path is the path to the file.
